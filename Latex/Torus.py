@@ -185,9 +185,9 @@ def visualize_results(sphere_points, torus_points):
     ax1.scatter(sphere_points[:, 0], sphere_points[:, 1], sphere_points[:, 2], 
                alpha=0.6, s=1)
     ax1.set_title('Initial Sphere')
-    ax1.set_xlim([-3, 3])
-    ax1.set_ylim([-6, 6])
-    ax1.set_zlim([-9, 9])
+    ax1.set_xlim([-2, 2])
+    ax1.set_ylim([-4, 4])
+    ax1.set_zlim([-8, 8])
     
     # Generated torus
     ax2 = fig.add_subplot(122, projection='3d')
@@ -204,5 +204,6 @@ def visualize_results(sphere_points, torus_points):
 # Generate initial sphere for comparison
 initial_sphere = torch.randn(1000, 3)
 initial_sphere = initial_sphere / torch.norm(initial_sphere, dim=1, keepdim=True)
+
 
 visualize_results(initial_sphere, torus_points)
