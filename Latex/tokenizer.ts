@@ -1,75 +1,90 @@
-// types.ts
+// tokenizer.ts
 
-export type Token = 
-  | { type: 'whitespace'; value: string }
-  | { type: 'brace'; value: '{' | '}' }
-  | { type: 'bracket'; value: '[' | ']' }
-  | { type: 'superscript'; value: '^' }
-  | { type: 'subscript'; value: '_' }
-  | { type: 'command'; value: string }
-  | { type: 'identifier'; value: string }
-  | { type: 'number'; value: string }
-  | { type: 'operator'; value: string }
-  | { type: 'punctuation'; value: string };
+import { Token } from './types';
 
-export type MathNode = 
-  | Identifier
-  | Number
-  | Operator
-  | Superscript
-  | Subscript
-  | Fraction
-  | SquareRoot
-  | Group
-  | Sequence;
+export function tokenize(input: string): Token[] {
+  const tokens: Token[] = [];
+  let current = 0;
 
-export interface Identifier {
-  type: 'identifier';
-  name: string;
-}
+  while (current < input.length) {
+    let char = input[current];
 
-export interface Number {
-  type: 'number';
-  value: string;
-}
+    // Whitespace
+    if (/\s/.test(char)) {
+      let value = '';
+      while (current < input.length && /\s/.test(input[current])) {
+        value += input[current];
+        current++;
+      }
+      tokens.push({ type: 'whitespace', value });
+      continue;
+    }
 
-export interface Operator {
-  type: 'operator';
-  operator: string;
-  left: MathNode;
-  right: MathNode;
-}
+    // Braces
+    if (char === '{' || char === '}') {
+      tokens.push({ type: 'brace', value: char });
+      current++;
+      continue;
+    }
 
-export interface Superscript {
-  type: 'superscript';
-  base: MathNode;
-  exponent: MathNode;
-}
+    // Superscript and subscript
+    if (char === '^') {
+      tokens.push({ type: 'superscript', value: '^' });
+      current++;
+      continue;
+    }
 
-export interface Subscript {
-  type: 'subscript';
-  base: MathNode;
-  subscript: MathNode;
-}
+    if (char === '_') {
+      tokens.push({ type: 'subscript', value: '_' });
+      current++;
+      continue;
+    }
 
-export interface Fraction {
-  type: 'fraction';
-  numerator: MathNode;
-  denominator: MathNode;
-}
+    // Commands: start with backslash
+    if (char === '\\') {
+      let value = '';
+      current++; // skip the backslash
+      // Read the command name: letters only
+      while (current < input.length && /[a-zA-Z]/.test(input[current])) {
+        value += input[current];
+        current++;
+      }
+      tokens.push({ type: 'command', value });
+      continue;
+    }
 
-export interface SquareRoot {
-  type: 'sqrt';
-  body: MathNode;
-}
+    // Numbers: digits and possibly a decimal point
+    if (/[0-9]/.test(char)) {
+      let value = '';
+      while (current < input.length && /[0-9.]/.test(input[current])) {
+        value += input[current];
+        current++;
+      }
+      tokens.push({ type: 'number', value });
+      continue;
+    }
 
-export interface Group {
-  type: 'group';
-  body: MathNode;
-  delimiter?: string; // We'll add for future
-}
+    // Operators: +, -, *, /
+    if (['+', '-', '*', '/'].includes(char)) {
+      tokens.push({ type: 'operator', value: char });
+      current++;
+      continue;
+    }
 
-export interface Sequence {
-  type: 'sequence';
-  children: MathNode[];
+    // Identifiers: letters
+    if (/[a-zA-Z]/.test(char)) {
+      let value = '';
+      while (current < input.length && /[a-zA-Z]/.test(input[current])) {
+        value += input[current];
+        current++;
+      }
+      tokens.push({ type: 'identifier', value });
+      continue;
+    }
+
+    // If we get here, we don't know what it is, so we skip one character
+    current++;
+  }
+
+  return tokens;
 }
